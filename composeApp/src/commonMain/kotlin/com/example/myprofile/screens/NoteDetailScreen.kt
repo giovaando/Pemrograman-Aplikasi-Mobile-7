@@ -5,26 +5,27 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myprofile.viewmodel.NoteViewModel
+import kotlinx.datetime.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteDetailScreen(
-    noteId: Int,
+    noteId: Long,
     viewModel: NoteViewModel,
     onBack: () -> Unit,
-    onEdit: (Int) -> Unit
+    onEdit: (Long) -> Unit
 ) {
-    val note = viewModel.getNoteById(noteId)
+    LaunchedEffect(noteId) { viewModel.selectNote(noteId) }
+    val note by viewModel.selectedNote.collectAsState()
 
     Scaffold(
         topBar = {
@@ -36,16 +37,17 @@ fun NoteDetailScreen(
                     }
                 },
                 actions = {
-                    if (note != null) {
-                        IconButton(onClick = { viewModel.toggleFavorite(noteId) }) {
+                    note?.let {
+                        IconButton(onClick = { viewModel.toggleFavorite(it.id) }) {
                             Icon(
-                                imageVector = if (note.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                                imageVector = if (it.is_favorite == 1L) Icons.Filled.Favorite
+                                else Icons.Filled.FavoriteBorder,
                                 contentDescription = "Favorite",
-                                tint = if (note.isFavorite) MaterialTheme.colorScheme.error
+                                tint = if (it.is_favorite == 1L) MaterialTheme.colorScheme.error
                                 else MaterialTheme.colorScheme.onSurface
                             )
                         }
-                        IconButton(onClick = { onEdit(noteId) }) {
+                        IconButton(onClick = { onEdit(it.id) }) {
                             Icon(Icons.Filled.Edit, contentDescription = "Edit")
                         }
                     }
@@ -54,34 +56,26 @@ fun NoteDetailScreen(
         }
     ) { padding ->
         if (note == null) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                Text("Catatan tidak ditemukan.")
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
         } else {
+            val n = note!!
+            val dateStr = remember(n.updated_at) {
+                try { Instant.fromEpochMilliseconds(n.updated_at).toString().take(10) }
+                catch (e: Exception) { "" }
+            }
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
+                modifier = Modifier.fillMaxSize().padding(padding)
                     .padding(horizontal = 20.dp, vertical = 16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                Text(
-                    text = note.title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
+                Text(n.title, fontWeight = FontWeight.Bold, fontSize = 22.sp)
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    text = note.createdAt,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
+                Text(dateStr, fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f))
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-                Text(
-                    text = note.content,
-                    fontSize = 16.sp,
-                    lineHeight = 26.sp
-                )
+                Text(n.content, fontSize = 16.sp, lineHeight = 26.sp)
             }
         }
     }

@@ -14,14 +14,15 @@ import com.example.myprofile.viewmodel.NoteViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditNoteScreen(
-    noteId: Int,
+    noteId: Long,
     viewModel: NoteViewModel,
     onBack: () -> Unit
 ) {
-    val note = viewModel.getNoteById(noteId)
+    LaunchedEffect(noteId) { viewModel.selectNote(noteId) }
+    val note by viewModel.selectedNote.collectAsState()
 
-    var title   by remember { mutableStateOf(note?.title   ?: "") }
-    var content by remember { mutableStateOf(note?.content ?: "") }
+    var title   by remember(note) { mutableStateOf(note?.title   ?: "") }
+    var content by remember(note) { mutableStateOf(note?.content ?: "") }
 
     Scaffold(
         topBar = {
@@ -29,30 +30,25 @@ fun EditNoteScreen(
                 title = { Text("Edit Catatan") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 }
             )
         }
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+            modifier = Modifier.fillMaxSize().padding(padding)
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
+                value = title, onValueChange = { title = it },
                 label = { Text("Judul") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                shape = RoundedCornerShape(12.dp), singleLine = true
             )
             OutlinedTextField(
-                value = content,
-                onValueChange = { content = it },
+                value = content, onValueChange = { content = it },
                 label = { Text("Isi Catatan") },
                 modifier = Modifier.fillMaxWidth().height(200.dp),
                 shape = RoundedCornerShape(12.dp)

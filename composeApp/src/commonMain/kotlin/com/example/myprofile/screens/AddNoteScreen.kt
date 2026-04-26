@@ -17,7 +17,7 @@ fun AddNoteScreen(
     viewModel: NoteViewModel,
     onBack: () -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
+    var title   by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
 
     Scaffold(
@@ -26,30 +26,25 @@ fun AddNoteScreen(
                 title = { Text("Tambah Catatan") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 }
             )
         }
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+            modifier = Modifier.fillMaxSize().padding(padding)
                 .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
+                value = title, onValueChange = { title = it },
                 label = { Text("Judul") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
+                shape = RoundedCornerShape(12.dp), singleLine = true
             )
             OutlinedTextField(
-                value = content,
-                onValueChange = { content = it },
+                value = content, onValueChange = { content = it },
                 label = { Text("Isi Catatan") },
                 modifier = Modifier.fillMaxWidth().height(200.dp),
                 shape = RoundedCornerShape(12.dp)
