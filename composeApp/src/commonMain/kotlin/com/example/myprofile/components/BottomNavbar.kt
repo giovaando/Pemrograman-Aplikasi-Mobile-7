@@ -1,15 +1,9 @@
 package com.example.myprofile.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -27,6 +21,7 @@ fun BottomNavBar(navController: NavController) {
         BottomNavItem(Screen.Notes.route,     "Notes",     Icons.Filled.Home),
         BottomNavItem(Screen.Favorites.route, "Favorites", Icons.Filled.Favorite),
         BottomNavItem(Screen.Profile.route,   "Profile",   Icons.Filled.Person),
+        BottomNavItem(Screen.Settings.route,  "Settings",  Icons.Filled.Settings),
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -38,11 +33,9 @@ fun BottomNavBar(navController: NavController) {
                 selected = currentRoute == item.route,
                 onClick = {
                     navController.navigate(item.route) {
-                        popUpTo(Screen.Notes.route) {
-                            saveState = true
-                        }
+                        popUpTo(Screen.Notes.route) { saveState = true }
                         launchSingleTop = true
-                        restoreState = true
+                        restoreState    = true
                     }
                 },
                 icon  = { Icon(item.icon, contentDescription = item.label) },
