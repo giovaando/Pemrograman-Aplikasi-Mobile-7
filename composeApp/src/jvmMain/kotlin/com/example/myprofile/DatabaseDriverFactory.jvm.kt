@@ -1,2 +1,13 @@
-package com.example.myprofile
+package com.example.myprofile.database
 
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.example.myprofile.db.NotesDatabase
+
+actual class DatabaseDriverFactory {
+    actual fun createDriver(): SqlDriver {
+        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        NotesDatabase.Schema.create(driver)
+        return driver
+    }
+}
