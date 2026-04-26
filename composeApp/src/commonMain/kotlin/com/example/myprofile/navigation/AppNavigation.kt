@@ -8,22 +8,24 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.myprofile.screens.AddNoteScreen
-import com.example.myprofile.screens.EditNoteScreen
-import com.example.myprofile.screens.FavoritesScreen
-import com.example.myprofile.screens.NoteDetailScreen
-import com.example.myprofile.screens.NotesScreen
-import com.example.myprofile.screens.ProfileScreen
+import com.example.myprofile.data.NoteRepository
+import com.example.myprofile.data.SettingsRepository
+import com.example.myprofile.screens.*
 import com.example.myprofile.viewmodel.NoteViewModel
 import com.example.myprofile.viewmodel.ProfileViewModel
+import com.example.myprofile.viewmodel.SettingsViewModel
 
 @Composable
 fun AppNavigation(
     navController: NavHostController,
+    noteRepository: NoteRepository,
+    settingsRepository: SettingsRepository,
     modifier: Modifier = Modifier,
-    noteViewModel: NoteViewModel = viewModel { NoteViewModel() },
     profileViewModel: ProfileViewModel = viewModel { ProfileViewModel() }
 ) {
+    val noteViewModel: NoteViewModel = viewModel(key = "noteVM") { NoteViewModel(noteRepository) }
+    val settingsViewModel: SettingsViewModel = viewModel(key = "settingsVM") { SettingsViewModel(settingsRepository) }
+
     NavHost(
         navController = navController,
         startDestination = Screen.Notes.route,
@@ -31,53 +33,44 @@ fun AppNavigation(
     ) {
         composable(Screen.Notes.route) {
             NotesScreen(
-                viewModel = noteViewModel,
+                viewModel   = noteViewModel,
                 onNoteClick = { id -> navController.navigate(Screen.NoteDetail.createRoute(id)) },
-                onAddClick = { navController.navigate(Screen.AddNote.route) }
+                onAddClick  = { navController.navigate(Screen.AddNote.route) }
             )
         }
-
         composable(Screen.Favorites.route) {
             FavoritesScreen(
-                viewModel = noteViewModel,
+                viewModel   = noteViewModel,
                 onNoteClick = { id -> navController.navigate(Screen.NoteDetail.createRoute(id)) }
             )
         }
-
         composable(Screen.Profile.route) {
             ProfileScreen(viewModel = profileViewModel)
         }
-
+        composable(Screen.Settings.route) {
+            SettingsScreen(viewModel = settingsViewModel)
+        }
         composable(
             route = Screen.NoteDetail.route,
-            arguments = listOf(navArgument("noteId") { type = NavType.IntType })
+            arguments = listOf(navArgument("noteId") { type = NavType.LongType })
         ) { backStackEntry ->
-            val noteId = backStackEntry.arguments?.getInt("noteId") ?: return@composable
+            val noteId = backStackEntry.arguments?.getLong("noteId") ?: return@composable
             NoteDetailScreen(
-                noteId = noteId,
+                noteId    = noteId,
                 viewModel = noteViewModel,
-                onBack = { navController.popBackStack() },
-                onEdit = { id -> navController.navigate(Screen.EditNote.createRoute(id)) }
+                onBack    = { navController.popBackStack() },
+                onEdit    = { id -> navController.navigate(Screen.EditNote.createRoute(id)) }
             )
         }
-
         composable(Screen.AddNote.route) {
-            AddNoteScreen(
-                viewModel = noteViewModel,
-                onBack = { navController.popBackStack() }
-            )
+            AddNoteScreen(viewModel = noteViewModel, onBack = { navController.popBackStack() })
         }
-
         composable(
             route = Screen.EditNote.route,
-            arguments = listOf(navArgument("noteId") { type = NavType.IntType })
+            arguments = listOf(navArgument("noteId") { type = NavType.LongType })
         ) { backStackEntry ->
-            val noteId = backStackEntry.arguments?.getInt("noteId") ?: return@composable
-            EditNoteScreen(
-                noteId = noteId,
-                viewModel = noteViewModel,
-                onBack = { navController.popBackStack() }
-            )
+            val noteId = backStackEntry.arguments?.getLong("noteId") ?: return@composable
+            EditNoteScreen(noteId = noteId, viewModel = noteViewModel, onBack = { navController.popBackStack() })
         }
     }
 }
