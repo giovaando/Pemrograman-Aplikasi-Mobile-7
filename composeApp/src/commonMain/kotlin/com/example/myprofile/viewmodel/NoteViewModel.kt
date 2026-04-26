@@ -1,45 +1,82 @@
 package com.example.myprofile.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.myprofile.data.NoteRepository
-import com.example.myprofile.data.NoteUiState
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import com.example.myprofile.data.NotesUiState
+import com.example.myprofile.db.NoteEntity
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
-class NoteViewModel : ViewModel() {
+class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
-    private val repository = NoteRepository()
+    // Search query state
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val _uiState = MutableStateFlow(NoteUiState(notes = repository.getAllNotes()))
-    val uiState: StateFlow<NoteUiState> = _uiState.asStateFlow()
+    // Notes UI state — reacts to search query changes
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<NotesUiState> = _searchQuery
+        .flatMapLatest { query ->
+            if (query.isBlank()) repository.getAllNotes()
+            else repository.searchNotes(query)
+        }
+        .map { notes ->
+            if (notes.isEmpty()) NotesUiState.Empty
+            else NotesUiState.Content(notes)
+        }
+        .onStart { emit(NotesUiState.Loading) }
+        .catch { e -> emit(NotesUiState.Error(e.message ?: "Unknown error")) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = NotesUiState.Loading
+        )
 
-    fun refresh() {
-        _uiState.update { it.copy(notes = repository.getAllNotes()) }
+    // Favorites state
+    val favoritesState: StateFlow<NotesUiState> = repository.getFavorites()
+        .map { notes ->
+            if (notes.isEmpty()) NotesUiState.Empty
+            else NotesUiState.Content(notes)
+        }
+        .onStart { emit(NotesUiState.Loading) }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = NotesUiState.Loading
+        )
+
+    // Detail note state
+    private val _selectedNoteId = MutableStateFlow<Long?>(null)
+    val selectedNote: StateFlow<NoteEntity?> = _selectedNoteId
+        .flatMapLatest { id ->
+            if (id == null) flowOf(null)
+            else repository.getNoteById(id)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
     }
 
-    fun getNoteById(id: Int) = repository.getNoteById(id)
+    fun selectNote(id: Long) {
+        _selectedNoteId.value = id
+    }
 
     fun addNote(title: String, content: String) {
-        repository.addNote(title, content)
-        refresh()
+        viewModelScope.launch { repository.insertNote(title, content) }
     }
 
-    fun updateNote(id: Int, title: String, content: String) {
-        repository.updateNote(id, title, content)
-        refresh()
+    fun updateNote(id: Long, title: String, content: String) {
+        viewModelScope.launch { repository.updateNote(id, title, content) }
     }
 
-    fun toggleFavorite(id: Int) {
-        repository.toggleFavorite(id)
-        refresh()
+    fun toggleFavorite(id: Long) {
+        viewModelScope.launch { repository.toggleFavorite(id) }
     }
 
-    fun deleteNote(id: Int) {
-        repository.deleteNote(id)
-        refresh()
+    fun deleteNote(id: Long) {
+        viewModelScope.launch { repository.deleteNote(id) }
     }
-
-    fun getFavorites() = repository.getFavorites()
 }
