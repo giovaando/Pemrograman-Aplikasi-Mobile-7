@@ -1,51 +1,64 @@
 package com.example.myprofile.data
 
-import com.example.myprofile.model.Note
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
+import com.example.myprofile.db.NotesDatabase
+import com.example.myprofile.db.NoteEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 
-class NoteRepository {
-    // In-memory storage (sesuai scope tugas)
-    private val notes = mutableListOf(
-        Note(1, "Belajar Kotlin", "Kotlin adalah bahasa pemrograman modern yang berjalan di JVM dan bisa digunakan untuk Android development.", false, "2025-04-10"),
-        Note(2, "Compose Multiplatform", "Compose Multiplatform memungkinkan kita membangun UI satu kali dan menjalankannya di Android, iOS, dan Desktop.", true, "2025-04-11"),
-        Note(3, "State Management", "State di Compose dikelola dengan remember + mutableStateOf atau StateFlow dari ViewModel.", false, "2025-04-12"),
-        Note(4, "Navigation Component", "NavHost, NavController, dan Routes adalah komponen utama navigasi di Compose.", true, "2025-04-13"),
-        Note(5, "MVVM Architecture", "Model-View-ViewModel memisahkan logika bisnis dari UI, membuat kode lebih mudah di-test.", false, "2025-04-14"),
-    )
-    private var nextId = 6
+class NoteRepository(private val database: NotesDatabase) {
 
-    fun getAllNotes(): List<Note> = notes.toList()
+    private val queries = database.noteQueries
 
-    fun getNoteById(id: Int): Note? = notes.find { it.id == id }
+    fun getAllNotes(): Flow<List<NoteEntity>> =
+        queries.selectAll()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
 
-    fun addNote(title: String, content: String): Note {
-        val note = Note(
-            id = nextId++,
-            title = title,
-            content = content,
-            isFavorite = false,
-            createdAt = "2025-04-17"
-        )
-        notes.add(note)
-        return note
+    fun getFavorites(): Flow<List<NoteEntity>> =
+        queries.selectFavorites()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
+
+    fun searchNotes(query: String): Flow<List<NoteEntity>> {
+        val like = "%$query%"
+        return queries.selectByQuery(like, like)
+            .asFlow()
+            .mapToList(Dispatchers.IO)
     }
 
-    fun updateNote(id: Int, title: String, content: String) {
-        val index = notes.indexOfFirst { it.id == id }
-        if (index >= 0) {
-            notes[index] = notes[index].copy(title = title, content = content)
+    fun getNoteById(id: Long): Flow<NoteEntity?> =
+        queries.selectById(id)
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.IO)
+
+    suspend fun insertNote(title: String, content: String) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        withContext(Dispatchers.IO) {
+            queries.insert(title, content, now, now)
         }
     }
 
-    fun toggleFavorite(id: Int) {
-        val index = notes.indexOfFirst { it.id == id }
-        if (index >= 0) {
-            notes[index] = notes[index].copy(isFavorite = !notes[index].isFavorite)
+    suspend fun updateNote(id: Long, title: String, content: String) {
+        val now = Clock.System.now().toEpochMilliseconds()
+        withContext(Dispatchers.IO) {
+            queries.update(title, content, now, id)
         }
     }
 
-    fun deleteNote(id: Int) {
-        notes.removeAll { it.id == id }
+    suspend fun toggleFavorite(id: Long) {
+        withContext(Dispatchers.IO) {
+            queries.toggleFavorite(id)
+        }
     }
 
-    fun getFavorites(): List<Note> = notes.filter { it.isFavorite }
+    suspend fun deleteNote(id: Long) {
+        withContext(Dispatchers.IO) {
+            queries.delete(id)
+        }
+    }
 }

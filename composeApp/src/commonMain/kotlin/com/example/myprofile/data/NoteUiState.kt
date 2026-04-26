@@ -1,9 +1,10 @@
 package com.example.myprofile.data
 
-import com.example.myprofile.model.Note
+import com.example.myprofile.db.NoteEntity
 
-data class NoteUiState(
-    val notes: List<Note> = emptyList(),
-    val isLoading: Boolean = false,
-    val saveSuccess: Boolean = false
-)
+sealed class NotesUiState {
+    object Loading  : NotesUiState()
+    object Empty    : NotesUiState()
+    data class Content(val notes: List<NoteEntity>) : NotesUiState()
+    data class Error(val message: String)           : NotesUiState()
+}
