@@ -2,7 +2,6 @@ package com.example.myprofile.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -10,14 +9,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myprofile.theme.AppColors
 import com.example.myprofile.viewmodel.NoteViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddNoteScreen(viewModel: NoteViewModel, onBack: () -> Unit) {
     var title   by remember { mutableStateOf("") }
@@ -26,23 +25,68 @@ fun AddNoteScreen(viewModel: NoteViewModel, onBack: () -> Unit) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .statusBarsPadding() // ✅ Memberikan ruang aman untuk status bar
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically
+                    .background(MaterialTheme.colorScheme.background)
+                    .statusBarsPadding()
             ) {
-                IconButton(
-                    onClick  = onBack,
-                    modifier = Modifier.size(40.dp).clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                Row(
+                    modifier              = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment     = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", modifier = Modifier.size(18.dp))
+                    // Back dengan teks "Notes"
+                    TextButton(
+                        onClick = onBack,
+                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack, null,
+                            tint     = AppColors.Primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "Notes",
+                            color      = AppColors.Primary,
+                            fontSize   = 16.sp,
+                            fontWeight = FontWeight.Normal
+                        )
+                    }
+                    // Judul tengah
+                    Text(
+                        "New Note",
+                        fontSize   = 17.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color      = MaterialTheme.colorScheme.onBackground
+                    )
+                    // Save button kanan
+                    TextButton(
+                        onClick  = {
+                            if (title.isNotBlank()) {
+                                viewModel.addNote(title.trim(), content.trim())
+                                onBack()
+                            }
+                        },
+                        enabled  = title.isNotBlank(),
+                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            "Save",
+                            color      = if (title.isNotBlank()) AppColors.Primary
+                            else AppColors.NavInactive,
+                            fontSize   = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
-                Text("Catatan Baru", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
-                Box(Modifier.size(40.dp))
+                HorizontalDivider(
+                    color     = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                    thickness = 0.5.dp
+                )
             }
         }
     ) { padding ->
@@ -50,50 +94,62 @@ fun AddNoteScreen(viewModel: NoteViewModel, onBack: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 20.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(
+            // Title field — borderless, besar
+            androidx.compose.foundation.text.BasicTextField(
                 value         = title,
                 onValueChange = { title = it },
-                label         = { Text("Judul") },
-                modifier      = Modifier.fillMaxWidth(),
-                shape         = RoundedCornerShape(14.dp),
+                modifier      = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
                 singleLine    = true,
-                colors        = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor   = AppColors.Primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedLabelColor    = AppColors.Primary
-                )
+                textStyle     = TextStyle(
+                    fontSize   = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color      = MaterialTheme.colorScheme.onBackground
+                ),
+                decorationBox = { inner ->
+                    if (title.isEmpty()) {
+                        Text(
+                            "Title",
+                            fontSize   = 20.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color      = AppColors.NavInactive
+                        )
+                    }
+                    inner()
+                }
             )
-            OutlinedTextField(
+            HorizontalDivider(
+                color     = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                thickness = 0.5.dp
+            )
+            // Content field — borderless, full size
+            androidx.compose.foundation.text.BasicTextField(
                 value         = content,
                 onValueChange = { content = it },
-                label         = { Text("Isi catatan...") },
-                modifier      = Modifier.fillMaxWidth().height(220.dp),
-                shape         = RoundedCornerShape(14.dp),
-                colors        = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor   = AppColors.Primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedLabelColor    = AppColors.Primary
-                )
-            )
-            Spacer(Modifier.weight(1f))
-            Button(
-                onClick = {
-                    if (title.isNotBlank()) {
-                        viewModel.addNote(title.trim(), content.trim())
-                        onBack()
+                modifier      = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                textStyle     = TextStyle(
+                    fontSize   = 16.sp,
+                    color      = MaterialTheme.colorScheme.onBackground,
+                    lineHeight = 24.sp
+                ),
+                decorationBox = { inner ->
+                    if (content.isEmpty()) {
+                        Text(
+                            "Start typing your note...",
+                            fontSize   = 16.sp,
+                            color      = AppColors.NavInactive,
+                            lineHeight = 24.sp
+                        )
                     }
-                },
-                modifier         = Modifier.fillMaxWidth().height(52.dp),
-                shape            = RoundedCornerShape(16.dp),
-                enabled          = title.isNotBlank(),
-                colors           = ButtonDefaults.buttonColors(containerColor = AppColors.NavActive)
-            ) {
-                Text("Simpan Catatan", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-            }
-            Spacer(Modifier.height(8.dp))
+                    inner()
+                }
+            )
         }
     }
 }
