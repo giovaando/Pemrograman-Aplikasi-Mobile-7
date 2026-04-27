@@ -23,13 +23,19 @@ fun AppNavigation(
     modifier: Modifier = Modifier,
     profileViewModel: ProfileViewModel = viewModel { ProfileViewModel() }
 ) {
-    val noteViewModel: NoteViewModel = viewModel(key = "noteVM") { NoteViewModel(noteRepository) }
-    val settingsViewModel: SettingsViewModel = viewModel(key = "settingsVM") { SettingsViewModel(settingsRepository) }
+    // NoteViewModel sekarang menerima settingsRepository agar
+    // sort order sinkron otomatis ketika user ubah di Settings
+    val noteViewModel: NoteViewModel = viewModel(key = "noteVM") {
+        NoteViewModel(noteRepository, settingsRepository)
+    }
+    val settingsViewModel: SettingsViewModel = viewModel(key = "settingsVM") {
+        SettingsViewModel(settingsRepository)
+    }
 
     NavHost(
-        navController = navController,
+        navController    = navController,
         startDestination = Screen.Notes.route,
-        modifier = modifier
+        modifier         = modifier
     ) {
         composable(Screen.Notes.route) {
             NotesScreen(
@@ -51,7 +57,7 @@ fun AppNavigation(
             SettingsScreen(viewModel = settingsViewModel)
         }
         composable(
-            route = Screen.NoteDetail.route,
+            route     = Screen.NoteDetail.route,
             arguments = listOf(navArgument("noteId") { type = NavType.LongType })
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: return@composable
@@ -66,11 +72,15 @@ fun AppNavigation(
             AddNoteScreen(viewModel = noteViewModel, onBack = { navController.popBackStack() })
         }
         composable(
-            route = Screen.EditNote.route,
+            route     = Screen.EditNote.route,
             arguments = listOf(navArgument("noteId") { type = NavType.LongType })
         ) { backStackEntry ->
             val noteId = backStackEntry.arguments?.getLong("noteId") ?: return@composable
-            EditNoteScreen(noteId = noteId, viewModel = noteViewModel, onBack = { navController.popBackStack() })
+            EditNoteScreen(
+                noteId    = noteId,
+                viewModel = noteViewModel,
+                onBack    = { navController.popBackStack() }
+            )
         }
     }
 }

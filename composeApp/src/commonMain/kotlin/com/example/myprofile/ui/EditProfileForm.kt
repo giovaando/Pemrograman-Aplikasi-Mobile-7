@@ -7,24 +7,17 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myprofile.theme.AppColors
-import com.example.myprofile.theme.AppTheme
 
-/**
- * COMPOSABLE — LabeledTextField
- * Stateless TextField dengan state hoisting.
- * State (value) dan event (onValueChange) dikirim dari parent.
- *
- * Ini contoh STATE HOISTING:
- *   Parent menyimpan state → turun ke sini sebagai parameter
- *   User ketik → onValueChange dipanggil → parent update state
- */
 @Composable
 fun LabeledTextField(
     label: String,
@@ -32,48 +25,37 @@ fun LabeledTextField(
     onValueChange: (String) -> Unit,
     placeholder: String = "",
     maxLines: Int = 1,
-    theme: AppTheme,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
-            text = label,
-            fontSize = 12.sp,
+            text       = label,
+            fontSize   = 12.sp,
             fontWeight = FontWeight.Medium,
-            color = theme.textHint,
-            modifier = Modifier.padding(bottom = 4.dp)
+            color      = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier   = Modifier.padding(bottom = 4.dp)
         )
         OutlinedTextField(
-            value = value,
+            value         = value,
             onValueChange = onValueChange,
-            placeholder = {
+            placeholder   = {
                 Text(
-                    text = placeholder,
-                    color = theme.textHint,
+                    text     = placeholder,
+                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             },
             maxLines = maxLines,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = AppColors.Primary,
-                unfocusedBorderColor = theme.divider,
-                focusedTextColor = theme.textPrimary,
-                unfocusedTextColor = theme.textPrimary,
-                cursorColor = AppColors.Primary,
-                focusedContainerColor = theme.surface,
-                unfocusedContainerColor = theme.surface
+            shape    = RoundedCornerShape(10.dp),
+            colors   = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor   = AppColors.Primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
             )
         )
     }
 }
 
-/**
- * COMPOSABLE — EditProfileForm
- * Form edit profil yang stateless.
- * Semua state di-hoist ke ProfileViewModel melalui App().
- */
 @Composable
 fun EditProfileForm(
     editName: String,
@@ -82,93 +64,121 @@ fun EditProfileForm(
     onBioChange: (String) -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit,
-    theme: AppTheme,
     modifier: Modifier = Modifier
 ) {
+    // Tampilkan error hanya setelah user pernah mencoba simpan dengan nama kosong
+    var showNameError by remember { mutableStateOf(false) }
+    val isNameBlank = editName.isBlank()
+
     Card(
-        modifier = modifier
+        modifier  = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape     = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = theme.surface)
+        colors    = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 
-            // ── Header ────────────────────────────────────────
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 12.dp)
+                modifier          = Modifier.padding(bottom = 12.dp)
             ) {
                 Text(
-                    text = "✏️ Edit Profil",
-                    fontSize = 16.sp,
+                    text       = "✏️ Edit Profil",
+                    fontSize   = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = AppColors.PrimaryDark,
-                    modifier = Modifier.weight(1f)
+                    color      = AppColors.PrimaryDark,
+                    modifier   = Modifier.weight(1f)
                 )
             }
 
-            HorizontalDivider(color = theme.divider, thickness = 1.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ── TextField Nama (State Hoisting) ───────────────
-            LabeledTextField(
-                label = "Nama",
-                value = editName,
-                onValueChange = onNameChange,
-                placeholder = "Masukkan nama baru...",
-                theme = theme
-            )
+            // ── Field Nama dengan validasi ────────────────────
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text       = "Nama",
+                    fontSize   = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color      = if (showNameError && isNameBlank)
+                        MaterialTheme.colorScheme.error
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier   = Modifier.padding(bottom = 4.dp)
+                )
+                OutlinedTextField(
+                    value         = editName,
+                    onValueChange = {
+                        onNameChange(it)
+                        // Reset error saat user mulai mengetik lagi
+                        if (showNameError) showNameError = false
+                    },
+                    placeholder   = { Text("Masukkan nama baru...") },
+                    isError       = showNameError && isNameBlank,
+                    supportingText = {
+                        if (showNameError && isNameBlank) {
+                            Text(
+                                "⚠️ Nama tidak boleh kosong",
+                                color    = MaterialTheme.colorScheme.error,
+                                fontSize = 12.sp
+                            )
+                        }
+                    },
+                    singleLine = true,
+                    modifier   = Modifier.fillMaxWidth(),
+                    shape      = RoundedCornerShape(10.dp),
+                    colors     = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor   = AppColors.Primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        errorBorderColor     = MaterialTheme.colorScheme.error
+                    )
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ── TextField Bio (State Hoisting) ────────────────
             LabeledTextField(
-                label = "Bio",
-                value = editBio,
+                label         = "Bio",
+                value         = editBio,
                 onValueChange = onBioChange,
-                placeholder = "Masukkan bio baru...",
-                maxLines = 4,
-                theme = theme
+                placeholder   = "Masukkan bio baru...",
+                maxLines      = 4
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ── Action Buttons ────────────────────────────────
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Batal
                 OutlinedButton(
-                    onClick = onCancel,
+                    onClick  = onCancel,
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(10.dp)
+                    shape    = RoundedCornerShape(10.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = "Batal",
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Filled.Close, "Batal", Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Batal")
                 }
-
-                // Simpan
                 Button(
-                    onClick = onSave,
+                    onClick = {
+                        if (isNameBlank) {
+                            // Tampilkan pesan error, TIDAK simpan
+                            showNameError = true
+                        } else {
+                            showNameError = false
+                            onSave()
+                        }
+                    },
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = AppColors.Primary
-                    )
+                    shape    = RoundedCornerShape(10.dp),
+                    colors   = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = "Simpan",
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Icon(Icons.Filled.Check, "Simpan", Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Simpan", fontWeight = FontWeight.SemiBold)
                 }
