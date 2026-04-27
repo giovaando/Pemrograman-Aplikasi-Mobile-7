@@ -1,48 +1,92 @@
 package com.example.myprofile.theme
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-/**
- * THEME — AppColors
- * Warna terpusat untuk light dan dark mode.
- * ViewModel menyimpan isDarkMode, App() memilih color set yang tepat.
- */
+// ── Brand Colors ───────────────────────────────────────────────
 object AppColors {
+    // Primary
+    val Primary        = Color(0xFF7C3AED)   // violet-600
+    val PrimaryLight   = Color(0xFFDDD6FE)   // violet-200
+    val PrimaryDark    = Color(0xFF5B21B6)   // violet-700
 
-    // ── Light Mode ────────────────────────────────────────────
-    val Primary       = Color(0xFF3949AB)
-    val PrimaryDark   = Color(0xFF1A237E)
-    val Secondary     = Color(0xFF7986CB)
+    // Card accent fills
+    val CardYellow     = Color(0xFFFDE68A)   // amber-200
+    val CardMint       = Color(0xFFA7F3D0)   // emerald-200
+    val CardPurple     = Color(0xFFDDD6FE)   // violet-200
+    val CardPink       = Color(0xFFFBCFE8)   // pink-200
+    val CardBlue       = Color(0xFFBFDBFE)   // blue-200
 
-    val BackgroundLight  = Color(0xFFF5F5F5)
-    val SurfaceLight     = Color.White
-    val DividerLight     = Color(0xFFE8EAF6)
-    val TextPrimaryLight = Color(0xFF212121)
-    val TextSecondaryLight = Color(0xFF424242)
-    val TextHintLight    = Color(0xFF9E9E9E)
+    // Tag text (darkened version of card fills)
+    val TagYellowText  = Color(0xFF92400E)
+    val TagMintText    = Color(0xFF065F46)
+    val TagPurpleText  = Color(0xFF5B21B6)
+    val TagPinkText    = Color(0xFF9D174D)
+    val TagBlueText    = Color(0xFF1E40AF)
 
-    // ── Dark Mode ─────────────────────────────────────────────
-    val BackgroundDark   = Color(0xFF121212)
-    val SurfaceDark      = Color(0xFF1E1E1E)
-    val DividerDark      = Color(0xFF2C2C2C)
-    val TextPrimaryDark  = Color(0xFFE0E0E0)
-    val TextSecondaryDark = Color(0xFFBDBDBD)
-    val TextHintDark     = Color(0xFF757575)
+    // Surface & background
+    val Background     = Color(0xFFFAFAF8)
+    val Surface        = Color(0xFFFFFFFF)
+    val SurfaceVariant = Color(0xFFF3F4F6)
+    val Border         = Color(0xFFF3F4F6)
+    val BorderMed      = Color(0xFFE5E7EB)
 
-    // ── Icon tints (sama di kedua mode) ───────────────────────
-    val IconEmail    = Color(0xFFE53935)
-    val IconPhone    = Color(0xFF43A047)
-    val IconLocation = Color(0xFFFB8C00)
-    val IconGithub   = Color(0xFF9E9E9E)
-    val IconDefault  = Color(0xFF3949AB)
+    // Text
+    val TextPrimary    = Color(0xFF111827)
+    val TextSecondary  = Color(0xFF6B7280)
+    val TextHint       = Color(0xFF9CA3AF)
+
+    // Icon tints
+    val IconEmail      = Color(0xFFEF4444)
+    val IconPhone      = Color(0xFF10B981)
+    val IconLocation   = Color(0xFFF59E0B)
+    val IconGithub     = Color(0xFF6B7280)
+    val IconDefault    = Color(0xFF7C3AED)
+
+    // Nav
+    val NavActive      = Color(0xFF111827)
+    val NavInactive    = Color(0xFFE5E7EB)
 }
 
-/** Helper: ambil warna sesuai mode */
-data class AppTheme(val isDark: Boolean) {
-    val background   get() = if (isDark) AppColors.BackgroundDark   else AppColors.BackgroundLight
-    val surface      get() = if (isDark) AppColors.SurfaceDark      else AppColors.SurfaceLight
-    val divider      get() = if (isDark) AppColors.DividerDark      else AppColors.DividerLight
-    val textPrimary  get() = if (isDark) AppColors.TextPrimaryDark  else AppColors.TextPrimaryLight
-    val textSecondary get() = if (isDark) AppColors.TextSecondaryDark else AppColors.TextSecondaryLight
-    val textHint     get() = if (isDark) AppColors.TextHintDark     else AppColors.TextHintLight
-}
+// ── Card color cycling ─────────────────────────────────────────
+val cardColors = listOf(
+    AppColors.CardYellow to AppColors.TagYellowText,
+    AppColors.CardMint   to AppColors.TagMintText,
+    AppColors.CardPurple to AppColors.TagPurpleText,
+    AppColors.CardPink   to AppColors.TagPinkText,
+    AppColors.CardBlue   to AppColors.TagBlueText,
+)
+
+fun cardColorForIndex(index: Int) = cardColors[index % cardColors.size]
+
+// ── Material3 Color Schemes ────────────────────────────────────
+val LightColorScheme = lightColorScheme(
+    primary           = AppColors.Primary,
+    onPrimary         = Color.White,
+    primaryContainer  = AppColors.PrimaryLight,
+    onPrimaryContainer = AppColors.PrimaryDark,
+    background        = AppColors.Background,
+    onBackground      = AppColors.TextPrimary,
+    surface           = AppColors.Surface,
+    onSurface         = AppColors.TextPrimary,
+    surfaceVariant    = AppColors.SurfaceVariant,
+    onSurfaceVariant  = AppColors.TextSecondary,
+    outline           = AppColors.BorderMed,
+)
+
+val DarkColorScheme = darkColorScheme(
+    primary           = AppColors.PrimaryLight,
+    onPrimary         = AppColors.PrimaryDark,
+    primaryContainer  = AppColors.PrimaryDark,
+    onPrimaryContainer = AppColors.PrimaryLight,
+    background        = Color(0xFF0F172A),
+    onBackground      = Color(0xFFF1F5F9),
+    surface           = Color(0xFF1E293B),
+    onSurface         = Color(0xFFF1F5F9),
+    surfaceVariant    = Color(0xFF334155),
+    onSurfaceVariant  = Color(0xFF94A3B8),
+    outline           = Color(0xFF475569),
+)

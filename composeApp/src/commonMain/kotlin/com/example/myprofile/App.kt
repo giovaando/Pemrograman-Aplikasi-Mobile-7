@@ -3,8 +3,7 @@ package com.example.myprofile
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -16,8 +15,9 @@ import com.example.myprofile.database.DatabaseDriverFactory
 import com.example.myprofile.db.NotesDatabase
 import com.example.myprofile.navigation.AppNavigation
 import com.example.myprofile.navigation.Screen
+import com.example.myprofile.theme.DarkColorScheme
+import com.example.myprofile.theme.LightColorScheme
 import com.russhwolf.settings.Settings
-import androidx.compose.material3.Scaffold
 
 private val bottomNavRoutes = setOf(
     Screen.Notes.route,
@@ -33,24 +33,21 @@ fun App(driverFactory: DatabaseDriverFactory) {
     val settings     = remember { Settings() }
     val settingsRepo = remember { SettingsRepository(settings) }
 
-    // ── Observe tema dari SettingsRepository ──────────────────
-    // Setiap kali user ubah tema di SettingsScreen, App langsung re-compose
     val currentTheme by settingsRepo.themeFlow.collectAsState()
-    val systemIsDark = isSystemInDarkTheme()
+    val systemIsDark  = isSystemInDarkTheme()
 
     val useDarkTheme = when (currentTheme) {
         SettingsRepository.THEME_DARK  -> true
         SettingsRepository.THEME_LIGHT -> false
-        else                           -> systemIsDark   // THEME_SYSTEM
+        else                           -> systemIsDark
     }
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // ── Terapkan tema ke MaterialTheme ────────────────────────
     MaterialTheme(
-        colorScheme = if (useDarkTheme) darkColorScheme() else lightColorScheme()
+        colorScheme = if (useDarkTheme) DarkColorScheme else LightColorScheme
     ) {
         Scaffold(
             bottomBar = {
