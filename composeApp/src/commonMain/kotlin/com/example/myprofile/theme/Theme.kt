@@ -12,6 +12,7 @@ object AppColors {
     val Primary        = Color(0xFF7C3AED)   // violet-600
     val PrimaryLight   = Color(0xFFDDD6FE)   // violet-200
     val PrimaryDark    = Color(0xFF5B21B6)   // violet-700
+    val Secondary      = Color(0xFF9F67F5)   // violet-400 (avatar placeholder bg)
 
     // Card accent fills
     val CardYellow     = Color(0xFFFDE68A)   // amber-200
@@ -64,29 +65,29 @@ fun cardColorForIndex(index: Int) = cardColors[index % cardColors.size]
 
 // ── Material3 Color Schemes ────────────────────────────────────
 val LightColorScheme = lightColorScheme(
-    primary           = AppColors.Primary,
-    onPrimary         = Color.White,
-    primaryContainer  = AppColors.PrimaryLight,
+    primary            = AppColors.Primary,
+    onPrimary          = Color.White,
+    primaryContainer   = AppColors.PrimaryLight,
     onPrimaryContainer = AppColors.PrimaryDark,
-    background        = AppColors.Background,
-    onBackground      = AppColors.TextPrimary,
-    surface           = AppColors.Surface,
-    onSurface         = AppColors.TextPrimary,
-    surfaceVariant    = AppColors.SurfaceVariant,
-    onSurfaceVariant  = AppColors.TextSecondary,
-    outline           = AppColors.BorderMed,
+    background         = AppColors.Background,
+    onBackground       = AppColors.TextPrimary,
+    surface            = AppColors.Surface,
+    onSurface          = AppColors.TextPrimary,
+    surfaceVariant     = AppColors.SurfaceVariant,
+    onSurfaceVariant   = AppColors.TextSecondary,
+    outline            = AppColors.BorderMed,
 )
 
 val DarkColorScheme = darkColorScheme(
-    primary           = AppColors.PrimaryLight,
-    onPrimary         = AppColors.PrimaryDark,
-    primaryContainer  = AppColors.PrimaryDark,
+    primary            = AppColors.PrimaryLight,
+    onPrimary          = AppColors.PrimaryDark,
+    primaryContainer   = AppColors.PrimaryDark,
     onPrimaryContainer = AppColors.PrimaryLight,
-    background        = Color(0xFF0F172A),
-    onBackground      = Color(0xFFF1F5F9),
-    surface           = Color(0xFF1E293B),
-    onSurface         = Color(0xFFF1F5F9),
-    surfaceVariant    = Color(0xFF334155),
-    onSurfaceVariant  = Color(0xFF94A3B8),
-    outline           = Color(0xFF475569),
+    background         = Color(0xFF0F172A),
+    onBackground       = Color(0xFFF1F5F9),
+    surface            = Color(0xFF1E293B),
+    onSurface          = Color(0xFFF1F5F9),
+    surfaceVariant     = Color(0xFF334155),
+    onSurfaceVariant   = Color(0xFF94A3B8),
+    outline            = Color(0xFF475569),
 )

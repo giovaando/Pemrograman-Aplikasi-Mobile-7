@@ -1,6 +1,7 @@
 package com.example.myprofile
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -50,6 +51,7 @@ fun App(driverFactory: DatabaseDriverFactory) {
         colorScheme = if (useDarkTheme) DarkColorScheme else LightColorScheme
     ) {
         Scaffold(
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
                 if (currentRoute in bottomNavRoutes) {
                     BottomNavBar(navController = navController)
