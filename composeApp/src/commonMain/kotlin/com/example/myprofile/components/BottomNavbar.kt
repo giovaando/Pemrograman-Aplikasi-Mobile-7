@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -30,11 +29,12 @@ private data class NavItem(
 
 @Composable
 fun BottomNavBar(navController: NavController) {
+    // Perbaikan pemetaan Ikon agar sesuai dengan fungsinya
     val items = listOf(
-        NavItem(Screen.Notes.route,     Icons.Filled.Home,        "Home"),
-        NavItem(Screen.Favorites.route, Icons.Filled.GridView,    "Explore"),
-        NavItem(Screen.Profile.route,   Icons.Filled.BarChart,    "Stats"),
-        NavItem(Screen.Settings.route,  Icons.Filled.Person,      "Profile"),
+        NavItem(Screen.Notes.route,     Icons.Filled.Home,      "Home"),
+        NavItem(Screen.Favorites.route, Icons.Filled.Favorite,  "Favorites"),
+        NavItem(Screen.Profile.route,   Icons.Filled.Person,    "Profile"),
+        NavItem(Screen.Settings.route,  Icons.Filled.Settings,  "Settings"),
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -44,10 +44,9 @@ fun BottomNavBar(navController: NavController) {
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp), // Sedikit tambah vertical padding luar
         contentAlignment = Alignment.Center
     ) {
-        // Floating pill container
         Box(
             modifier = Modifier
                 .shadow(
@@ -58,10 +57,10 @@ fun BottomNavBar(navController: NavController) {
                 )
                 .clip(RoundedCornerShape(50.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(horizontal = 8.dp, vertical = 8.dp)
+                .padding(horizontal = 10.dp, vertical = 10.dp) // Perbesar container sedikit
         ) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 items.forEach { item ->
@@ -92,24 +91,22 @@ private fun NavPillItem(
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(50.dp))
-            .background(
-                if (selected) AppColors.NavActive
-                else Color.Transparent
-            )
+            .background(if (selected) AppColors.NavActive else Color.Transparent)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onClick
             )
-            .padding(horizontal = if (selected) 20.dp else 14.dp, vertical = 10.dp),
+            // ✅ Padding ditingkatkan untuk target sentuh yang lebih baik (Aksesibilitas)
+            .padding(horizontal = if (selected) 24.dp else 18.dp, vertical = 14.dp),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = item.icon,
             contentDescription = item.label,
-            modifier = Modifier.size(22.dp),
-            tint = if (selected) Color.White
-            else MaterialTheme.colorScheme.onSurfaceVariant
+            // ✅ Ukuran Ikon ditingkatkan dari 22.dp menjadi 26.dp
+            modifier = Modifier.size(26.dp),
+            tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

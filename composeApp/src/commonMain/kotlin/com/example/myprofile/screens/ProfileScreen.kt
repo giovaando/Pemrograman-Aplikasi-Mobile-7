@@ -29,100 +29,95 @@ import com.example.myprofile.theme.AppColors
 import com.example.myprofile.ui.EditProfileForm
 import com.example.myprofile.viewmodel.ProfileViewModel
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ProfileScreen(viewModel: ProfileViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
             // ── Hero header ───────────────────────────────────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))
+                    .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
                     .background(AppColors.CardYellow)
-                    .padding(horizontal = 20.dp, vertical = 24.dp)
+                    .statusBarsPadding()
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 20.dp, bottom = 32.dp)  // FIX: pisahkan padding agar tidak error
             ) {
-                Column {
-                    Row(
-                        modifier              = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment     = Alignment.CenterVertically
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(90.dp)
+                            .clip(CircleShape)
+                            .background(Color.White.copy(alpha = 0.6f)),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            "Profil Saya",
-                            fontSize   = 13.sp,
-                            color      = AppColors.TagYellowText,
-                            fontWeight = FontWeight.Medium
+                        Icon(
+                            Icons.Filled.Person, null,
+                            modifier = Modifier.size(50.dp),
+                            tint = AppColors.TagYellowText
                         )
-                        IconButton(
-                            onClick  = {
-                                if (uiState.isEditMode) viewModel.closeEditMode()
-                                else viewModel.openEditMode()
-                            },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.6f))
-                        ) {
-                            Icon(
-                                Icons.Filled.Edit, "Edit",
-                                tint     = AppColors.TagYellowText,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
                     }
+
                     Spacer(Modifier.height(16.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+
+                    Text(
+                        text = uiState.name,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = AppColors.TagYellowText
+                    )
+                    Text(
+                        text = uiState.title,
+                        fontSize = 14.sp,
+                        color = AppColors.TagYellowText.copy(alpha = 0.8f)
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    Button(
+                        onClick = {
+                            if (uiState.isEditMode) viewModel.closeEditMode()
+                            else viewModel.openEditMode()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AppColors.TagYellowText,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.5f))
-                                .then(
-                                    Modifier.clip(CircleShape)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Filled.Person, null,
-                                modifier = Modifier.size(36.dp),
-                                tint     = AppColors.TagYellowText
-                            )
-                        }
-                        Column {
-                            Text(
-                                uiState.name,
-                                fontSize   = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color      = AppColors.TagYellowText
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .background(Color.White.copy(alpha = 0.5f))
-                                    .padding(horizontal = 10.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    uiState.title,
-                                    fontSize = 11.sp,
-                                    color    = AppColors.TagYellowText
-                                )
-                            }
-                        }
+                        Icon(
+                            if (uiState.isEditMode) Icons.Filled.Close else Icons.Filled.Edit,
+                            null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            if (uiState.isEditMode) "Batal Edit" else "Edit Profil",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }
 
             Spacer(Modifier.height(16.dp))
 
-            // ── Save success ──────────────────────────────────
             AnimatedVisibility(
                 visible = uiState.saveSuccess,
                 enter   = fadeIn() + slideInVertically(),
@@ -136,19 +131,23 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                         .background(AppColors.CardMint)
                         .padding(14.dp)
                 ) {
-                    Text("Profil berhasil disimpan!", color = AppColors.TagMintText, fontWeight = FontWeight.Medium, fontSize = 13.sp)
+                    Text(
+                        "Profil berhasil disimpan!",
+                        color = AppColors.TagMintText,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp
+                    )
                 }
             }
 
-            // ── Edit form ─────────────────────────────────────
             AnimatedVisibility(
                 visible = uiState.isEditMode,
                 enter   = fadeIn() + slideInVertically(),
                 exit    = fadeOut() + slideOutVertically()
             ) {
                 EditProfileForm(
-                    editName    = uiState.editName,
-                    editBio     = uiState.editBio,
+                    editName     = uiState.editName,
+                    editBio      = uiState.editBio,
                     onNameChange = { viewModel.onEditNameChange(it) },
                     onBioChange  = { viewModel.onEditBioChange(it) },
                     onSave       = { viewModel.saveProfile() },
@@ -158,11 +157,10 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
 
             Spacer(Modifier.height(8.dp))
 
-            // ── Bio card ──────────────────────────────────────
             ProfileInfoCard(
-                modifier = Modifier.padding(horizontal = 20.dp),
+                modifier    = Modifier.padding(horizontal = 20.dp),
                 accentColor = AppColors.Primary,
-                label   = "Tentang Saya"
+                label       = "Tentang Saya"
             ) {
                 Text(
                     uiState.bio,
@@ -175,7 +173,6 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
 
             Spacer(Modifier.height(12.dp))
 
-            // ── Kontak ────────────────────────────────────────
             ProfileInfoCard(
                 modifier    = Modifier.padding(horizontal = 20.dp),
                 accentColor = Color(0xFF10B981),
@@ -184,33 +181,37 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                     TextButton(onClick = { viewModel.toggleContact() }) {
                         Text(
                             if (uiState.showContact) "Sembunyikan" else "Tampilkan",
-                            fontSize = 11.sp,
-                            color    = AppColors.Primary
+                            fontSize   = 11.sp,
+                            color      = AppColors.Primary,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
             ) {
-                AnimatedVisibility(visible = uiState.showContact, enter = fadeIn(), exit = fadeOut()) {
+                AnimatedVisibility(
+                    visible = uiState.showContact,
+                    enter   = fadeIn(),
+                    exit    = fadeOut()
+                ) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        ContactRow(Icons.Filled.Email,      "Email",    uiState.email,    AppColors.IconEmail)
-                        ContactRow(Icons.Filled.Phone,      "Telepon",  uiState.phone,    AppColors.IconPhone)
-                        ContactRow(Icons.Filled.LocationOn, "Lokasi",   uiState.location, AppColors.IconLocation)
-                        ContactRow(Icons.Filled.Star,       "GitHub",   uiState.github,   AppColors.IconGithub)
+                        ContactRow(Icons.Filled.Email,      "Email",   uiState.email,    AppColors.IconEmail)
+                        ContactRow(Icons.Filled.Phone,      "Telepon", uiState.phone,    AppColors.IconPhone)
+                        ContactRow(Icons.Filled.LocationOn, "Lokasi",  uiState.location, AppColors.IconLocation)
+                        ContactRow(Icons.Filled.Star,       "GitHub",  uiState.github,   AppColors.IconGithub)
                     }
                 }
             }
 
             Spacer(Modifier.height(12.dp))
 
-            // ── Skills ────────────────────────────────────────
             ProfileInfoCard(
                 modifier    = Modifier.padding(horizontal = 20.dp),
                 accentColor = Color(0xFFF59E0B),
                 label       = "Skills"
             ) {
-                androidx.compose.foundation.layout.FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement   = Arrangement.spacedBy(6.dp)
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement   = Arrangement.spacedBy(8.dp)
                 ) {
                     uiState.skills.forEachIndexed { i, skill ->
                         val bg   = if (i < 2) AppColors.PrimaryLight else MaterialTheme.colorScheme.surfaceVariant
@@ -219,7 +220,7 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
                                 .background(bg)
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .padding(horizontal = 14.dp, vertical = 6.dp)
                         ) {
                             Text(skill, fontSize = 12.sp, color = text, fontWeight = FontWeight.Medium)
                         }
@@ -227,7 +228,11 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(
+                Modifier
+                    .height(100.dp)
+                    .navigationBarsPadding()
+            )
         }
     }
 }
@@ -252,14 +257,23 @@ private fun ProfileInfoCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Box(
                     modifier = Modifier
-                        .width(4.dp).height(16.dp)
+                        .width(4.dp)
+                        .height(16.dp)
                         .clip(RoundedCornerShape(2.dp))
                         .background(accentColor)
                 )
-                Text(label, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+                Text(
+                    label,
+                    fontSize   = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color      = MaterialTheme.colorScheme.onBackground
+                )
             }
             action?.invoke()
         }
@@ -270,7 +284,10 @@ private fun ProfileInfoCard(
 
 @Composable
 private fun ContactRow(icon: ImageVector, label: String, value: String, tint: Color) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+    Row(
+        verticalAlignment     = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         Box(
             modifier = Modifier
                 .size(36.dp)
@@ -281,8 +298,8 @@ private fun ContactRow(icon: ImageVector, label: String, value: String, tint: Co
             Icon(icon, null, tint = tint, modifier = Modifier.size(18.dp))
         }
         Column {
-            Text(label, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(value, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(value, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
         }
     }
 }

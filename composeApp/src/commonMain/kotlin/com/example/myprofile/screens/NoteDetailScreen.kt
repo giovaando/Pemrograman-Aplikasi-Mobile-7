@@ -8,7 +8,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,9 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myprofile.theme.AppColors
 import com.example.myprofile.viewmodel.NoteViewModel
-import kotlinx.datetime.Instant
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteDetailScreen(
     noteId: Long,
@@ -35,105 +35,104 @@ fun NoteDetailScreen(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            Row(
+        // ✅ Aksi Utama dipindahkan ke Bawah (Bottom-Heavy UI)
+        bottomBar = {
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically
+                    .navigationBarsPadding()
+                    .padding(16.dp),
+                color = Color.Transparent
             ) {
-                IconButton(
-                    onClick  = onBack,
+                Row(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", modifier = Modifier.size(18.dp))
-                }
-                note?.let {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        IconButton(
-                            onClick  = { viewModel.toggleFavorite(it.id) },
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (it.is_favorite == 1L) Color(0xFFFBCFE8)
-                                    else MaterialTheme.colorScheme.surfaceVariant
-                                )
-                        ) {
-                            Icon(
-                                imageVector = if (it.is_favorite == 1L) Icons.Filled.Favorite
-                                else Icons.Filled.FavoriteBorder,
-                                contentDescription = "Fav",
-                                tint     = if (it.is_favorite == 1L) Color(0xFF9D174D)
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                        IconButton(
-                            onClick  = { onEdit(it.id) },
-                            modifier = Modifier
-                                .size(40.dp)
-                                .clip(CircleShape)
-                                .background(AppColors.PrimaryLight)
-                        ) {
-                            Icon(
-                                Icons.Filled.Edit, "Edit",
-                                tint     = AppColors.PrimaryDark,
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
+                    // Tombol Favorit
+                    Button(
+                        onClick = { viewModel.toggleFavorite(noteId) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (note?.is_favorite == 1L)
+                                AppColors.CardPink.copy(alpha = 0.3f)
+                            else MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.weight(1f).padding(end = 4.dp).height(52.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (note?.is_favorite == 1L) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                            contentDescription = "Favorit",
+                            tint = if (note?.is_favorite == 1L) Color.Red else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            if (note?.is_favorite == 1L) "Favorit" else "Sukai",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    // Tombol Edit Utama
+                    Button(
+                        onClick = { onEdit(noteId) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AppColors.NavActive,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.weight(1f).padding(start = 4.dp).height(52.dp)
+                    ) {
+                        Icon(Icons.Filled.Edit, "Edit", modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Edit Catatan", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
         }
     ) { padding ->
-        if (note == null) {
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = AppColors.Primary)
-            }
-        } else {
-            val n = note!!
-            val dateStr = remember(n.updated_at) {
-                try { Instant.fromEpochMilliseconds(n.updated_at).toString().take(10) }
-                catch (e: Exception) { "" }
-            }
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Top Bar minimalis hanya untuk tombol Back
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(horizontal = 20.dp)
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
+                    .statusBarsPadding() // ✅ Aman dari status bar
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                Spacer(Modifier.height(8.dp))
-                // Date chip
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier.size(40.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    Text(dateStr, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurface)
                 }
-                Spacer(Modifier.height(14.dp))
+            }
+
+            // Konten teks
+            Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
                 Text(
-                    text       = n.title,
-                    fontSize   = 24.sp,
+                    text = note?.title ?: "Memuat...",
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color      = MaterialTheme.colorScheme.onBackground,
-                    lineHeight = 32.sp
+                    lineHeight = 34.sp,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(Modifier.height(16.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-                Spacer(Modifier.height(16.dp))
                 Text(
-                    text       = n.content,
-                    fontSize   = 16.sp,
-                    lineHeight = 26.sp,
-                    color      = MaterialTheme.colorScheme.onSurface
+                    text = note?.content ?: "",
+                    fontSize = 16.sp,
+                    lineHeight = 24.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                 )
             }
         }

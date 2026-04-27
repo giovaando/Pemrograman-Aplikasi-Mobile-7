@@ -35,8 +35,9 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .statusBarsPadding() // ✅ Menurunkan teks header agar tidak tertutup status bar
                     .padding(horizontal = 20.dp)
-                    .padding(top = 20.dp, bottom = 16.dp)
+                    .padding(top = 16.dp, bottom = 16.dp)
             ) {
                 Text("Atur", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text("Pengaturan", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
