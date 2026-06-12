@@ -220,36 +220,39 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                     .clip(RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.surface)
             ) {
-                AnimatedVisibility(
-                    visible = uiState.showContact,
-                    enter   = fadeIn() + slideInVertically(),
-                    exit    = fadeOut()
-                ) {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                        ContactRow(Icons.Filled.Email, uiState.email, AppColors.IconEmail)
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                        ContactRow(Icons.Filled.Phone, uiState.phone, AppColors.IconPhone)
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                        ContactRow(Icons.Filled.LocationOn, uiState.location, AppColors.IconLocation)
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
-                        ContactRow(Icons.Filled.Star, uiState.github, AppColors.IconGithub)
-                    }
-                }
-                if (!uiState.showContact) {
-                    TextButton(
-                        onClick = { viewModel.toggleContact() },
-                        modifier = Modifier.fillMaxWidth().padding(8.dp)
+                // FIX 1: Wrap AnimatedVisibility in Column to use ColumnScope
+                Column {
+                    AnimatedVisibility(
+                        visible = uiState.showContact,
+                        enter   = fadeIn() + slideInVertically(),
+                        exit    = fadeOut()
                     ) {
-                        Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Tampilkan Kontak")
+                        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                            ContactRow(Icons.Filled.Email, uiState.email, AppColors.IconEmail)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                            ContactRow(Icons.Filled.Phone, uiState.phone, AppColors.IconPhone)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                            ContactRow(Icons.Filled.LocationOn, uiState.location, AppColors.IconLocation)
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+                            ContactRow(Icons.Filled.Star, uiState.github, AppColors.IconGithub)
+                        }
                     }
-                } else {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = { viewModel.toggleContact() }) {
-                            Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(14.dp))
-                            Spacer(Modifier.width(4.dp))
-                            Text("Sembunyikan", fontSize = 12.sp)
+                    if (!uiState.showContact) {
+                        TextButton(
+                            onClick = { viewModel.toggleContact() },
+                            modifier = Modifier.fillMaxWidth().padding(8.dp)
+                        ) {
+                            Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Tampilkan Kontak")
+                        }
+                    } else {
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                            TextButton(onClick = { viewModel.toggleContact() }) {
+                                Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(14.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("Sembunyikan", fontSize = 12.sp)
+                            }
                         }
                     }
                 }
@@ -298,11 +301,12 @@ fun ProfileScreen(viewModel: ProfileViewModel) {
                         fontWeight = FontWeight.Bold
                     )
                 }
+                // FIX 2: Ganti OutlinedButtonDefaults.colors() → ButtonDefaults.outlinedButtonColors()
                 OutlinedButton(
                     onClick  = {},
                     modifier = Modifier.weight(1f),
                     shape    = RoundedCornerShape(14.dp),
-                    colors   = OutlinedButtonDefaults.colors(
+                    colors   = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.onBackground
                     )
                 ) {

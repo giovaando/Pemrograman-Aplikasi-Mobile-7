@@ -33,7 +33,9 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.background)
-                    .padding(horizontal = 20.dp, top = 16.dp, bottom = 8.dp)
+                    // FIX: padding() tidak mendukung campuran horizontal + top + bottom
+                    // Gunakan padding(start, top, end, bottom) sebagai gantinya
+                    .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 8.dp)
             ) {
                 Text("Pengaturan",
                     fontSize = 28.sp,
